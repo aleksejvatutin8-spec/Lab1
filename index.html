@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Тренажёр скоростного писания</title>
+  <style>
+    body { font-family: Arial; max-width: 600px; margin: 50px auto; text-align: center; }
+    .text { font-size: 20px; margin: 20px; padding: 10px; background: #f0f0f0; }
+    input { width: 100%; padding: 10px; font-size: 18px; }
+    button { padding: 10px 20px; font-size: 16px; margin: 10px; }
+    .results { margin-top: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Тренажёр скорости печати</h1>
+  <div class="text" id="sample"></div>
+  <input type="text" id="userInput" placeholder="Начните ввод..." disabled>
+  <br>
+  <button id="startBtn">Начать</button>
+  <div class="results" id="result"></div>
+
+  <script>
+    const sentences = [
+      "Скорость печати проверяется здесь.",
+      "Тренируйтесь каждый день, чтобы улучшить навык.",
+      "Программирование требует внимания к деталям.",
+      "Быстрая печать помогает экономить время."
+    ];
+    let startTime, timer;
+    const sampleEl = document.getElementById('sample');
+    const inputEl = document.getElementById('userInput');
+    const resultEl = document.getElementById('result');
+    const startBtn = document.getElementById('startBtn');
+
+    function pickRandomSentence() {
+      return sentences[Math.floor(Math.random() * sentences.length)];
+    }
+
+    function startTest() {
+      sampleEl.textContent = pickRandomSentence();
+      inputEl.value = '';
+      inputEl.disabled = false;
+      inputEl.focus();
+      resultEl.textContent = '';
+      startTime = null;
+      startBtn.disabled = true;
+    }
+
+    function calculateStats() {
+      const endTime = Date.now();
+      const elapsedSeconds = (endTime - startTime) / 1000;
+      const typedText = inputEl.value;
+      const original = sampleEl.textContent;
+      const charCount = typedText.length;
+      const cpm = Math.round((charCount / elapsedSeconds) * 60);
+      const accuracy = typedText === original ? '100%' : 'ошибки';
+      resultEl.textContent = `Время: ${elapsedSeconds.toFixed(1)} сек | Знаков в мин: ${cpm} | Совпадение: ${accuracy}`;
+      inputEl.disabled = true;
+      startBtn.disabled = false;
+    }
+
+    inputEl.addEventListener('keydown', (e) => {
+      if (!startTime) {
+        startTime = Date.now();
+      }
+      if (e.key === 'Enter' || inputEl.value.length >= sampleEl.textContent.length) {
+        calculateStats();
+      }
+    });
+
+    startBtn.addEventListener('click', startTest);
+    startTest(); // первый запуск
+  </script>
+</body>
+</html>
