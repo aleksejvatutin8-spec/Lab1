@@ -2,61 +2,84 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Тренажёр скоростного писания</title>
+  <title>Тренажёр скоростного писания v2.0</title>
   <style>
-    body { font-family: Arial; max-width: 600px; margin: 50px auto; text-align: center; }
-    .text { font-size: 20px; margin: 20px; padding: 10px; background: #f0f0f0; }
+    body { font-family: Arial; max-width: 700px; margin: 50px auto; text-align: center; }
+    .text { font-size: 20px; margin: 20px; padding: 15px; background: #f0f0f0; white-space: pre-wrap; }
     input { width: 100%; padding: 10px; font-size: 18px; }
-    button { padding: 10px 20px; font-size: 16px; margin: 10px; }
+    button { padding: 10px 20px; font-size: 16px; margin: 10px 5px; }
+    select { padding: 8px; font-size: 16px; }
     .results { margin-top: 20px; font-weight: bold; }
+    .controls { margin: 20px 0; }
   </style>
 </head>
 <body>
   <h1>Тренажёр скорости печати</h1>
+  <div class="controls">
+    <label for="difficulty">Уровень сложности:</label>
+    <select id="difficulty">
+      <option value="easy">Лёгкий (короткие слова)</option>
+      <option value="medium" selected>Средний (предложения)</option>
+      <option value="hard">Сложный (абзацы)</option>
+    </select>
+    <button id="startBtn">Новое задание</button>
+  </div>
   <div class="text" id="sample"></div>
   <input type="text" id="userInput" placeholder="Начните ввод..." disabled>
-  <br>
-  <button id="startBtn">Начать</button>
   <div class="results" id="result"></div>
 
   <script>
-    const sentences = [
-      "Скорость печати проверяется здесь.",
-      "Тренируйтесь каждый день, чтобы улучшить навык.",
-      "Программирование требует внимания к деталям.",
-      "Быстрая печать помогает экономить время."
-    ];
-    let startTime, timer;
+    const texts = {
+      easy: [
+        "кот пёс дом",
+        "лес день ночь",
+        "мир труд май",
+        "сад куст лист"
+      ],
+      medium: [
+        "Скорость печати проверяется здесь.",
+        "Тренируйтесь каждый день.",
+        "Программирование – это интересно.",
+        "Быстрая печать экономит время."
+      ],
+      hard: [
+        "Это длинный текст для проверки навыка быстрой печати. Вам предстоит набрать несколько предложений без ошибок.",
+        "Сложный уровень требует концентрации и точности. Старайтесь не допускать опечаток и не смотреть на клавиатуру."
+      ]
+    };
+    let startTime;
     const sampleEl = document.getElementById('sample');
     const inputEl = document.getElementById('userInput');
     const resultEl = document.getElementById('result');
     const startBtn = document.getElementById('startBtn');
+    const difficultySelect = document.getElementById('difficulty');
 
-    function pickRandomSentence() {
-      return sentences[Math.floor(Math.random() * sentences.length)];
+    function getRandomText() {
+      const level = difficultySelect.value;
+      const pool = texts[level];
+      return pool[Math.floor(Math.random() * pool.length)];
     }
 
     function startTest() {
-      sampleEl.textContent = pickRandomSentence();
+      sampleEl.textContent = getRandomText();
       inputEl.value = '';
       inputEl.disabled = false;
       inputEl.focus();
       resultEl.textContent = '';
       startTime = null;
-      startBtn.disabled = true;
     }
 
-    function calculateStats() {
+    function finishTest() {
+      if (startTime === null) return;
       const endTime = Date.now();
       const elapsedSeconds = (endTime - startTime) / 1000;
       const typedText = inputEl.value;
       const original = sampleEl.textContent;
       const charCount = typedText.length;
       const cpm = Math.round((charCount / elapsedSeconds) * 60);
-      const accuracy = typedText === original ? '100%' : 'ошибки';
-      resultEl.textContent = `Время: ${elapsedSeconds.toFixed(1)} сек | Знаков в мин: ${cpm} | Совпадение: ${accuracy}`;
+      const accuracy = typedText === original ? '100%' : 'не совпадает';
+      resultEl.textContent = `Время: ${elapsedSeconds.toFixed(1)} сек | Знаков в мин: ${cpm} | Точность: ${accuracy}`;
       inputEl.disabled = true;
-      startBtn.disabled = false;
     }
 
     inputEl.addEventListener('keydown', (e) => {
@@ -64,12 +87,13 @@
         startTime = Date.now();
       }
       if (e.key === 'Enter' || inputEl.value.length >= sampleEl.textContent.length) {
-        calculateStats();
+        finishTest();
       }
     });
 
     startBtn.addEventListener('click', startTest);
-    startTest(); // первый запуск
+    difficultySelect.addEventListener('change', startTest);
+    window.addEventListener('load', startTest);
   </script>
 </body>
 </html>
